@@ -1,8 +1,8 @@
---[[       
-          Zenith Library
-          Owner: Something478 (Starflow)
-          Coder: Something478 (Starflow)
-          Inspired by: Rayfield :D
+--[[                 
+     Zenith Library
+     Owner: Something478 (Starflow)
+     Coder: Something478 (Starflow)
+     Inspired by: Rayfield :D
 ]]
 
 local Players = game:GetService("Players")
@@ -23,7 +23,6 @@ local Theme = {
 
 local function createDraggable(frame, dragHandle)
  local dragging, dragStart, startPos
-
  dragHandle.InputBegan:Connect(function(input)
   if input.UserInputType == Enum.UserInputType.MouseButton1 then
    dragging = true
@@ -36,7 +35,6 @@ local function createDraggable(frame, dragHandle)
    end)
   end
  end)
-
  UserInputService.InputChanged:Connect(function(input)
   if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
    local delta = input.Position - dragStart
@@ -48,24 +46,24 @@ end
 
 function ZenithLibrary:CreateWindow(config)
  local self = setmetatable({}, ZenithLibrary)
-
+ 
  local ScreenGui = Instance.new("ScreenGui")
  ScreenGui.Name = "Zenith"
  ScreenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
-
+ 
  local Main = Instance.new("Frame")
  Main.Size = UDim2.new(0, 500, 0, 300)
  Main.Position = UDim2.new(0.5, -250, 0.5, -150)
  Main.BackgroundColor3 = Theme.Background
  Main.BorderColor3 = Theme.Outline
  Main.Parent = ScreenGui
-
+ 
  local Topbar = Instance.new("Frame")
  Topbar.Size = UDim2.new(1, 0, 0, 30)
  Topbar.BackgroundColor3 = Theme.Topbar
  Topbar.BorderColor3 = Theme.Outline
  Topbar.Parent = Main
-
+ 
  local Title = Instance.new("TextLabel")
  Title.Size = UDim2.new(1, -10, 1, 0)
  Title.Position = UDim2.new(0, 5, 0, 0)
@@ -76,27 +74,27 @@ function ZenithLibrary:CreateWindow(config)
  Title.Font = Enum.Font.GothamBold
  Title.TextSize = 14
  Title.Parent = Topbar
-
+ 
  createDraggable(Main, Topbar)
-
+ 
  local TabHolder = Instance.new("Frame")
  TabHolder.Size = UDim2.new(0, 100, 1, -30)
  TabHolder.Position = UDim2.new(0, 0, 0, 30)
  TabHolder.BackgroundColor3 = Theme.Background
  TabHolder.BorderColor3 = Theme.Outline
  TabHolder.Parent = Main
-
+ 
  local ContentHolder = Instance.new("Frame")
  ContentHolder.Size = UDim2.new(1, -100, 1, -30)
  ContentHolder.Position = UDim2.new(0, 100, 0, 30)
  ContentHolder.BackgroundColor3 = Theme.Background
  ContentHolder.BorderColor3 = Theme.Outline
  ContentHolder.Parent = Main
-
+ 
  self.Tabs = {}
  self.ContentHolder = ContentHolder
  self.TabHolder = TabHolder
-
+ self.MainFrame = Main
  return self
 end
 
@@ -112,27 +110,26 @@ function ZenithLibrary:CreateTab(name)
  Tab.Button.Font = Enum.Font.Gotham
  Tab.Button.TextSize = 13
  Tab.Button.Parent = self.TabHolder
-
+ 
  Tab.Content = Instance.new("Frame")
  Tab.Content.Size = UDim2.new(1, 0, 1, 0)
  Tab.Content.BackgroundTransparency = 1
  Tab.Content.Visible = false
  Tab.Content.Parent = self.ContentHolder
-
+ 
  Tab.Button.MouseEnter:Connect(function()
   Tab.Button.BackgroundColor3 = Theme.ButtonHover
  end)
  Tab.Button.MouseLeave:Connect(function()
   Tab.Button.BackgroundColor3 = Theme.Button
  end)
-
  Tab.Button.MouseButton1Click:Connect(function()
   for _, t in pairs(self.Tabs) do
    t.Content.Visible = false
   end
   Tab.Content.Visible = true
  end)
-
+ 
  table.insert(self.Tabs, Tab)
  return Tab
 end
@@ -148,17 +145,50 @@ function ZenithLibrary:CreateButton(tab, text, callback)
  Btn.Font = Enum.Font.Gotham
  Btn.TextSize = 13
  Btn.Parent = tab.Content
-
  Btn.MouseButton1Click:Connect(function()
   if callback then callback() end
  end)
-
  Btn.MouseEnter:Connect(function()
   Btn.BackgroundColor3 = Theme.ButtonHover
  end)
  Btn.MouseLeave:Connect(function()
   Btn.BackgroundColor3 = Theme.Button
  end)
+end
+
+-- New: Modify theme dynamically
+function ZenithLibrary:ModifyTheme(newTheme)
+ for k,v in pairs(newTheme) do
+  if Theme[k] ~= nil then
+   Theme[k] = v
+  end
+ end
+ -- Update existing elements
+ if self.MainFrame then
+  self.MainFrame.BackgroundColor3 = Theme.Background
+  for _, child in pairs(self.MainFrame:GetChildren()) do
+   if child:IsA("Frame") then
+    if child.Name == "Topbar" then
+     child.BackgroundColor3 = Theme.Topbar
+     for _, t in pairs(child:GetChildren()) do
+      if t:IsA("TextLabel") then
+       t.TextColor3 = Theme.TextColor
+      end
+     end
+    elseif child.Name == "TabHolder" then
+     child.BackgroundColor3 = Theme.Background
+     for _, btn in pairs(child:GetChildren()) do
+      if btn:IsA("TextButton") then
+       btn.BackgroundColor3 = Theme.Button
+       btn.TextColor3 = Theme.TextColor
+      end
+     end
+    elseif child.Name == "ContentHolder" then
+     child.BackgroundColor3 = Theme.Background
+    end
+   end
+  end
+ end
 end
 
 return ZenithLibrary
