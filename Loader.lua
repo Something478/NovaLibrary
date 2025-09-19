@@ -1,7 +1,7 @@
 --[[ 
      NovaLibrary
      Made by Something478 (SuperNova)
-     Version: 1.6
+     Version: 1.7
 ]]
 
 local NovaLibrary = {}
@@ -95,7 +95,7 @@ function NovaLibrary:CreateWindow(config)
     Title.Position = UDim2.new(0, 10, 0, 0)
     Title.BackgroundTransparency = 1
     Title.TextColor3 = self.Theme.TextColor
-    Title.Text = config.Title or "NovaLibrary"
+    Title.Text = config.Name or "NovaLibrary"
     Title.Font = Enum.Font.GothamBold
     Title.TextSize = 14
     Title.TextXAlignment = Enum.TextXAlignment.Left
@@ -126,6 +126,15 @@ function NovaLibrary:CreateWindow(config)
     TabButtonsList.Padding = UDim.new(0, 5)
     TabButtonsList.Parent = TabButtons
 
+    -- Notification function
+    function selfInstance:Notify(title, text, duration)
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = title,
+            Text = text,
+            Duration = duration or 5
+        })
+    end
+
     function selfInstance:CreateTab(name)
         local tabFrame = Instance.new("Frame")
         tabFrame.Size = UDim2.new(1, 0, 1, 0)
@@ -144,21 +153,27 @@ function NovaLibrary:CreateWindow(config)
         local btnCorner = Instance.new("UICorner", tabButton)
         btnCorner.CornerRadius = UDim.new(0, 4)
 
-        tabButton.MouseButton1Click:Connect(function()
-            for _, t in pairs(selfInstance.Tabs) do
-                t.Frame.Visible = false
-                t.Button.BackgroundColor3 = self.Theme.TabBackground
-                t.Button.TextColor3 = self.Theme.TabTextColor
+        -- Fixed: Use InputBegan instead of MouseButton1Click
+        tabButton.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                for _, t in pairs(selfInstance.Tabs) do
+                    t.Frame.Visible = false
+                    t.Button.BackgroundColor3 = self.Theme.TabBackground
+                    t.Button.TextColor3 = self.Theme.TabTextColor
+                end
+                tabFrame.Visible = true
+                tabButton.BackgroundColor3 = self.Theme.TabBackgroundSelected
+                tabButton.TextColor3 = self.Theme.SelectedTabTextColor
+                selfInstance.CurrentTab = tabFrame
             end
-            tabFrame.Visible = true
-            tabButton.BackgroundColor3 = self.Theme.TabBackgroundSelected
-            tabButton.TextColor3 = self.Theme.SelectedTabTextColor
-            selfInstance.CurrentTab = tabFrame
         end)
 
         table.insert(selfInstance.Tabs, {Frame = tabFrame, Button = tabButton})
         if #selfInstance.Tabs == 1 then
-            tabButton:MouseButton1Click()
+            tabFrame.Visible = true
+            tabButton.BackgroundColor3 = self.Theme.TabBackgroundSelected
+            tabButton.TextColor3 = self.Theme.SelectedTabTextColor
+            selfInstance.CurrentTab = tabFrame
         end
 
         local tabContent = Instance.new("ScrollingFrame")
@@ -186,16 +201,18 @@ function NovaLibrary:CreateWindow(config)
             local corner = Instance.new("UICorner", btn)
             corner.CornerRadius = UDim.new(0, 4)
             
-            btn.MouseEnter:Connect(function()
-                TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = NovaLibrary.Theme.ElementBackgroundHover}):Play()
+            btn.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    callback()
+                elseif input.UserInputType == Enum.UserInputType.MouseMovement then
+                    TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = NovaLibrary.Theme.ElementBackgroundHover}):Play()
+                end
             end)
             
-            btn.MouseLeave:Connect(function()
-                TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = NovaLibrary.Theme.ElementBackground}):Play()
-            end)
-            
-            btn.MouseButton1Click:Connect(function()
-                callback()
+            btn.InputEnded:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseMovement then
+                    TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = NovaLibrary.Theme.ElementBackground}):Play()
+                end
             end)
         end
 
@@ -258,10 +275,12 @@ function NovaLibrary:CreateWindow(config)
             
             local toggled = default
             
-            toggle.MouseButton1Click:Connect(function()
-                toggled = not toggled
-                toggle.Text = name.." : "..tostring(toggled)
-                callback(toggled)
+            toggle.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    toggled = not toggled
+                    toggle.Text = name.." : "..tostring(toggled)
+                    callback(toggled)
+                end
             end)
         end
 
