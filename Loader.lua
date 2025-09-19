@@ -156,14 +156,13 @@ function ZenithLibrary:CreateButton(tab, text, callback)
  end)
 end
 
--- New: Modify theme dynamically
 function ZenithLibrary:ModifyTheme(newTheme)
  for k,v in pairs(newTheme) do
   if Theme[k] ~= nil then
    Theme[k] = v
   end
  end
- -- Update existing elements
+ 
  if self.MainFrame then
   self.MainFrame.BackgroundColor3 = Theme.Background
   for _, child in pairs(self.MainFrame:GetChildren()) do
