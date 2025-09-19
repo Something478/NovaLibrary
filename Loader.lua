@@ -2,8 +2,6 @@
     NovaLibrary
     Made by SuperNova (Something478)
     V: 1.5
-
-
 ]]
 
 local NovaLibrary = {}
